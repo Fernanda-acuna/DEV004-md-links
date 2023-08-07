@@ -4,7 +4,7 @@
 // const fs = require('fs'); --no vamos a usar el require.
 import fs from 'fs';
 import path from 'path';
-import axios from 'axios'
+import axios from 'axios';
 //ruta es el readme.md
 // funcion que dice si la ruta existe o no
 export const mdExists = (ruta) => {
@@ -59,40 +59,59 @@ export const mdValid = (ruta) => {
 
 }
 
-// revisar promesa y callback
-
-//recibir ruta como parametro
-// googlear 'leer el contenido d eun archivo node js
-// intentar implementar dentro de mdRead
-
-
-
+// codigo con modificaciones
 export const mdRead = (ruta, options) => {
-  const linksResult = [];
-
-  // return new Promise(function(resolve, reject) {    
-    // Make an asynchronous call and either resolve or reject
-
-  fs.readFile(ruta, 'utf-8', (err, data) => {
-    if (err) {
-      console.log('no leyo el archivo: ', err);
-    } else {
-      const fileSplit = data.split('\n');
-      fileSplit.forEach( elements => {
-        const regexText = /\[(.*?)\]/g;
-        const regexLinks = /https:\/\/[^\s)]+/g;
-        const links = elements.match(regexLinks);
-        const texto = elements.match(regexText);
-        if (elements.match(regexLinks)){
-          linksResult.push({ "href": links, "text": texto, "file": ruta });
-          return linksResult;
-  
-        }
-      
-      });
-    };
+  return new Promise((resolve, reject) => {
+    fs.readFile(ruta, 'utf-8', (err, data) => {
+      if (err) {
+        console.log('no leyo el archivo: ', err);
+        reject(err); // Reject the promise if an error occurs during file read
+      } else {
+        const linksResult = [];
+        const fileSplit = data.split('\n');
+        fileSplit.forEach(elements => {
+          const regexText = /\[(.*?)\]/g;
+          const regexLinks = /https:\/\/[^\s)]+/g;
+          const links = elements.match(regexLinks);
+          const texto = elements.match(regexText);
+          if (elements.match(regexLinks)) {
+            linksResult.push({ "href": links, "text": texto, "file": ruta });
+          }
+        });
+        resolve(linksResult); // Resolve the promise with the extracted links
+      }
     });
-  }
+  });
+}
+
+//codigo antiguo
+// export const mdRead = (ruta, options) => {
+//   const linksResult = [];
+
+//   // return new Promise(function(resolve, reject) {    
+//     // Make an asynchronous call and either resolve or reject
+
+//   fs.readFile(ruta, 'utf-8', (err, data) => {
+//     if (err) {
+//       console.log('no leyo el archivo: ', err);
+//     } else {
+//       const fileSplit = data.split('\n');
+//       fileSplit.forEach( elements => {
+//         const regexText = /\[(.*?)\]/g;
+//         const regexLinks = /https:\/\/[^\s)]+/g;
+//         const links = elements.match(regexLinks);
+//         const texto = elements.match(regexText);
+//         if (elements.match(regexLinks)){
+//           linksResult.push({ "href": links, "text": texto, "file": ruta });
+//           return linksResult;
+  
+//         }
+      
+//       });
+//     };
+//     });
+//   }
+
 
 export const functionAxios = (links) => {
 console.log(links);
