@@ -15,23 +15,8 @@ export const mdExists = (ruta) => {
     return false
   }
 
-
-
-  /*const ruta = fs.stat(path, (err, stats) => {
-      if (err) {
-          if (err.code === 'ENOENT') {
-              console.error('Path does not exist');
-          } else {
-              console.error('An error occurred while checking the path:', err);
-          }
-      } else {
-          console.log('Path exists');
-      }
-  });*/
 };
 
-// esta funcion verifica si el archivo en la ruta dada es valido
-// y devuelve una promesa
 export const mdValid = (ruta) => {
   //se crea una promesa con los parametros de callback resolve y reject
   return new Promise((resolve, reject) => {
@@ -68,6 +53,7 @@ export const mdRead = (ruta, options) => {
         reject(err); // Reject the promise if an error occurs during file read
       } else {
         const linksResult = [];
+
         const fileSplit = data.split('\n');
         fileSplit.forEach(elements => {
           const regexText = /\[(.*?)\]/g;
@@ -83,34 +69,6 @@ export const mdRead = (ruta, options) => {
     });
   });
 }
-
-//codigo antiguo
-// export const mdRead = (ruta, options) => {
-//   const linksResult = [];
-
-//   // return new Promise(function(resolve, reject) {    
-//     // Make an asynchronous call and either resolve or reject
-
-//   fs.readFile(ruta, 'utf-8', (err, data) => {
-//     if (err) {
-//       console.log('no leyo el archivo: ', err);
-//     } else {
-//       const fileSplit = data.split('\n');
-//       fileSplit.forEach( elements => {
-//         const regexText = /\[(.*?)\]/g;
-//         const regexLinks = /https:\/\/[^\s)]+/g;
-//         const links = elements.match(regexLinks);
-//         const texto = elements.match(regexText);
-//         if (elements.match(regexLinks)){
-//           linksResult.push({ "href": links, "text": texto, "file": ruta });
-//           return linksResult;
-  
-//         }
-      
-//       });
-//     };
-//     });
-//   }
 
 
 export const functionAxios = (links) => {
@@ -136,55 +94,4 @@ console.log(links);
             });
         })
 
-      // } else {
-      //   links.push({ "href": link, "text": texto, "file": ruta });
-      // }
-    }
-  // };
-
-
-// });
-
-
-
-
-// export const mdRead = (ruta, options) => {
-  
-//   const links = []
-//   //la funcion readfile lee el archivo ruta, utf-8 es para leer en modo texto
-//   //err y data son callbacks, debe retornar una promesa (new promise)//
-//   fs.readFile(ruta, 'utf-8', (err, data) => {
-//     if (err) {
-//       console.log('no leyo el archivo: ', err);
-//     } else {
-//       // data.map(element => {
-//         // Regex obtención del texto
-//         const regexText = /\[(.*?)\]/g;
-//         // Regex para obtener links
-//         const regexLinks = /https:\/\/[^\s)]+/g;
-//         //con match y regex se encuentran los enlaces o texto (se guardan en link) 
-//         const link = data.match(regexLinks);
-//         const texto = data.match(regexText);
-// //con response se verifica el estado del enlace
-//         if (options.validate){
-//           console.log(options);
-//           // response(API externa) = hacer la llamada (con request)
-//           if (response.status_code == 200){
-
-//             resultado = "ok"
-//           } else {
-//             resultado = "fail"
-//           }
-//           links.push({ "href": link, "text": texto, "file": ruta, "status": response.status_code, "ok": resultado   });
-//         } else {
-//           links.push({ "href": link, "text": texto, "file": ruta });
-//         }
-//       // });
-
-//       console.log(links)
-
-//       const found = paragraph.match(regex);
-//       //console.log('si leyo ', data);
-//     }
-//   });
-
+ 
