@@ -16,7 +16,7 @@ export const mdExists = (ruta) => {
   }
 
 };
-
+//mdValid indica si la ruta es valida o no
 export const mdValid = (ruta) => {
   //se crea una promesa con los parametros de callback resolve y reject
   return new Promise((resolve, reject) => {
@@ -40,8 +40,6 @@ export const mdValid = (ruta) => {
       }
     });
   })
-
-
 }
 
 // codigo con modificaciones
@@ -71,27 +69,42 @@ export const mdRead = (ruta, options) => {
 }
 
 
-export const functionAxios = (links) => {
-console.log(links);
-      // if (options.validate) {
-        links.forEach(link =>{
-          axios.get(link)
-            .then(response => {
+export const functionAxios = (linksAxios) => {
+//console.log(linksAxios);
+const promisesArray = linksAxios.map((obj) =>axios.get(obj.href));
+return Promise.allSettled(promisesArray)
+.then((result) => {
+  const validateLink = [];
+  result.forEach((promise, i) => {
+    if (promise.status === 'fulfilled') {
+      validateLink.push({
+        href: linksAxios[i].href,
+        text: linksAxios[i].text,
+        file: linksAxios[i].file,
+        status: promise.value.status,
+        ok: 'Ok',
+      });
+    } else if (promise.status === 'rejected') {
+      let error_status = undefined;
+      if ('response' in promise.reason){
+        if ('status' in promise.reason.response){
+          error_status = promise.reason.response.status;
+        }
+      }
+      validateLink.push({
+        href: linksAxios[i].href,
+        text: linksAxios[i].text,
+        file: linksAxios[i].file,
+        status: error_status,
+        ok: 'Fail',
+      });
+    }
+  });
+  return validateLink;
+});
+};
               // console.log('Llamada exitosa');
-              if (response.status === 200) {
+             
+        
+    
 
-                links.push({  "status": response.status, "ok": "ok" });
-								console.log(links);
-              } else {
-                links.push({  "status": response.status, "ok": "fail" });
-								console.log(links);
-              }
-            })
-            .catch(error => {
-              // console.error('Error al hacer la solicitud a la API:', error);
-              // console.log('Llamada fallida');
-              links.push({ "href": link, "text": texto, "file": ruta, "status": null, "ok": "fail" });
-            });
-        })
-
- 

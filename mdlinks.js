@@ -2,6 +2,7 @@ import path from 'path'
 
 // se importan estas funciones desde index.js
 import { mdExists, mdValid, mdRead, functionAxios } from './index.js'
+import { Console } from 'console';
 
 const ruta = "README.md" // existe
 //console.log(ruta);
@@ -11,7 +12,6 @@ const ruta = "README.md" // existe
 // Sino, ejecuta else
 
 function mdLinks(ruta) {
-  console.log(ruta);
   return new Promise((resolve, reject) => {
     if (mdExists(ruta) === true) {
       const options = { validate: true };
@@ -22,13 +22,22 @@ function mdLinks(ruta) {
           return mdRead(validRuta, options); // Return the result of mdRead
         })
         .then((links) => {
-          console.log(links); // Process the extracted links here
+          //llamamos a axios para validar enlaces
+          functionAxios(links);
+          //resolvemos la promesa con la lista de enlaces
+          resolve(links);
+          //este console muestra los links en la consola
+          console.log(links);
         })
         .catch((err) => {
           console.log(err);
+          //rechazamos la promesa en caso de error
+          reject(err);
         });
     } else {
       console.log('falladisimo');
+      //se puede rechazar en caso que el archivo no exista
+      reject('archivo no encontrado');
     }
   });
 }
