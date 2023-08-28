@@ -9,3 +9,5 @@ describe('mdLinks', () => {
   });
 
 });
+
+//version de chalk>> "chalk": "^4.1.2"

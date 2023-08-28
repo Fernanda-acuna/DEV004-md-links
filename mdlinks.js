@@ -1,46 +1,107 @@
-import path from 'path'
 
-// se importan estas funciones desde index.js
-import { mdExists, mdValid, mdRead, functionAxios } from './index.js'
-import { Console } from 'console';
+// Aqui estan las funciones pequeñas que se exportan a mdlinks.js
 
-const ruta = "README.md" // existe
-//console.log(ruta);
-//const ruta = "REDME.md";  // NO existe
-//const ruta = "test";  // archivo
-// se esta comprobando que mdExist devuelva true, si devuelve true: se ejecuta el primer if.
-// Sino, ejecuta else
+// const fs = require('fs'); --no vamos a usar el require.
+import fs from 'fs';
+import path from 'path';
+import axios from 'axios';
+//ruta es el readme.md
+// funcion que dice si la ruta existe o no
+export const mdExists = (ruta) => {
+  // podemos resumir la funcion retornando solo el fs.ES
+  if (fs.existsSync(ruta)) {
+    return true
+  } else {
+    return false
+  }
 
-function mdLinks(ruta) {
+};
+//mdValid indica si la ruta es valida o no
+export const mdValid = (ruta) => {
+  //se crea una promesa con los parametros de callback resolve y reject
   return new Promise((resolve, reject) => {
-    if (mdExists(ruta) === true) {
-      const options = { validate: true };
-      // path.resolve converts the relative path to an absolute path
-      const rutaAbsoluta = path.resolve(ruta); // resolved path
-      mdValid(rutaAbsoluta)
-        .then((validRuta) => {
-          return mdRead(validRuta, options); // Return the result of mdRead
-        })
-        .then((links) => {
-          //llamamos a axios para validar enlaces
-          functionAxios(links);
-          //resolvemos la promesa con la lista de enlaces
-          resolve(links);
-          //este console muestra los links en la consola
-          console.log(links);
-        })
-        .catch((err) => {
-          console.log(err);
-          //rechazamos la promesa en caso de error
-          reject(err);
+    //la funcion asincronica fs.stat toma la ruta del archivo y una funcion callback
+    //esta funcion tmb se puede resumir un poco
+    fs.stat(ruta, (err, stats) => {
+      //throw error dentiene la ejecucion y se podria manejar en otro lugar de mi codigo
+      if (err) throw err;
+      // console.log(stats.isFile());
+      // stats.isFile verifica si el archivo es un archivo valido, si da true: continua con la verificacion
+      if (stats.isFile() == true) {
+        //con path.extname se obtiene la extencion del archivo, si es md, se resuelve true, sino reject
+        if (path.extname(ruta) == '.md') {
+          resolve(ruta)
+        } else {
+          reject(false)
+        }
+
+      } else {
+        console.log('No soportamos');
+      }
+    });
+  })
+}
+
+// codigo con modificaciones
+export const mdRead = (ruta, options) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(ruta, 'utf-8', (err, data) => {
+      if (err) {
+        console.log('no leyo el archivo: ', err);
+        reject(err); // Reject the promise if an error occurs during file read
+      } else {
+        const linksResult = [];
+
+        const fileSplit = data.split('\n');
+        fileSplit.forEach(elements => {
+          const regexText = /\[(.*?)\]/g;
+          const regexLinks = /https:\/\/[^\s)]+/g;
+          const links = elements.match(regexLinks);
+          const texto = elements.match(regexText);
+          if (elements.match(regexLinks)) {
+            linksResult.push({ "href": links, "text": texto, "file": ruta });
+          }
         });
-    } else {
-      console.log('falladisimo');
-      //se puede rechazar en caso que el archivo no exista
-      reject('archivo no encontrado');
-    }
+        resolve(linksResult); // Resolve the promise with the extracted links
+      }
+    });
   });
 }
 
-// Usage example:
-mdLinks(ruta);
+
+export const functionAxios = (linksAxios) => {
+//console.log(linksAxios);
+const promisesArray = linksAxios.map((obj) =>axios.get(obj.href));
+return Promise.allSettled(promisesArray)
+.then((result) => {
+  const validateLink = [];
+  result.forEach((promise, i) => {
+    if (promise.status === 'fulfilled') {
+      validateLink.push({
+        href: linksAxios[i].href,
+        text: linksAxios[i].text,
+        file: linksAxios[i].file,
+        status: promise.value.status,
+        ok: 'Ok',
+      });
+    } else if (promise.status === 'rejected') {
+      // let error_status;
+      // //console.log(promise.reason.response.res.statusCode);
+      // if ('response' in promise.reason){
+      //   if ('status' in promise.reason.response){
+      //     error_status = promise.reason.response.statusCode;
+
+      //   }
+      // }
+      validateLink.push({
+        href: linksAxios[i].href,
+        text: linksAxios[i].text,
+        file: linksAxios[i].file,
+        status: promise.reason.response,
+        ok: 'Fail',
+      });
+    }
+  });
+  return validateLink;
+});
+};
